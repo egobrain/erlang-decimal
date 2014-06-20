@@ -4,8 +4,14 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
-float({S, C, E}) ->
-  math:pow(-1, S) * C * math:pow(10, E).
+float(Term) ->
+    try
+        float_(Term)
+    catch _:_ ->
+            float_(decimal:reduce(Term))
+    end.
+float_({S, C, E}) ->
+    math:pow(-1, S) * C * math:pow(10, E).
 
 number(Term) when is_tuple(Term) ->
   Term;
