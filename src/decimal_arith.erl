@@ -61,8 +61,8 @@ add_sign(X, Y, C, Context) ->
     false ->
       % Note: cannot use compare/2 here to avoid cyclic dependency
       % (compare/2 depends on subtract/2 which depends on add/2).
-      AbsValueX = erlang:abs(decimal_conv:float(X)),
-      AbsValueY = erlang:abs(decimal_conv:float(Y)),
+      AbsValueX = erlang:abs(decimal_conv:float(X, Context)),
+      AbsValueY = erlang:abs(decimal_conv:float(Y, Context)),
       element(1, case AbsValueX > AbsValueY of true -> X; false -> Y end)
   end.
 
@@ -160,7 +160,7 @@ exp(X, _Context) when ?is_infinite(X) ->
 exp(X, _Context) when ?is_zero(X) ->
   one();
 exp(X, Context) ->
-  Z = decimal_conv:number(math:exp(decimal_conv:float(X))),
+  Z = decimal_conv:number(math:exp(decimal_conv:float(X, Context))),
   decimal_rounding:apply(Z, [{rounding, round_half_even}|Context]).
 
 ln(X, _Context) when ?is_zero(X) ->
@@ -172,7 +172,7 @@ ln(X, Context) ->
     0 ->
       zero();
     _ ->
-      Z = decimal_conv:number(math:log(decimal_conv:float(X))),
+      Z = decimal_conv:number(math:log(decimal_conv:float(X, Context))),
       decimal_rounding:apply(Z, [{rounding, round_half_even}|Context])
   end.
 
@@ -183,9 +183,9 @@ log10(X, _Context) when ?is_infinite(X) andalso not ?is_signed(X) ->
 log10(X, Context) ->
   case log10_power(X) of
     true ->
-      decimal_conv:number(round(math:log10(decimal_conv:float(X))));
+      decimal_conv:number(round(math:log10(decimal_conv:float(X, Context))));
     false ->
-      Z = decimal_conv:number(math:log10(decimal_conv:float(X))),
+      Z = decimal_conv:number(math:log10(decimal_conv:float(X, Context))),
       decimal_rounding:apply(Z, [{rounding, round_half_even}|Context])
   end.
 
@@ -276,7 +276,7 @@ power(X, {1, C, 0}, Context) ->
 power(X, {0, C, 0}, Context) ->
   power_multiply(C, X, X, Context);
 power(X, Y, Context) ->
-  Z = decimal_conv:number(math:pow(decimal_conv:float(X), decimal_conv:float(Y))),
+  Z = decimal_conv:number(math:pow(decimal_conv:float(X, Context), decimal_conv:float(Y, Context))),
   decimal_rounding:apply(Z, Context).
 
 power_multiply(1, _, Acc, _Context) ->

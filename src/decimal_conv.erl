@@ -1,6 +1,6 @@
 -module(decimal_conv).
 
--export([float/1, number/1, string/1]).
+-export([float/1, float/2, number/1, string/1]).
 
 -include_lib("eunit/include/eunit.hrl").
 
@@ -12,6 +12,10 @@ float(Term) ->
     end.
 float_({S, C, E}) ->
     math:pow(-1, S) * C * math:pow(10, E).
+
+float(Term, Context) ->
+    Term2 = decimal_rounding:apply(Term, Context),
+    float_(Term2).
 
 number(Term) when is_tuple(Term) ->
   Term;
