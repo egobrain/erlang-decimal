@@ -26,20 +26,19 @@ add(X, _, _Context) when ?is_infinite(X) ->
 add(_, Y, _Context) when ?is_infinite(Y) ->
   Y;
 add(X, Y, Context) ->
-  C = add_coefficient(X, Y),
-  Z = {add_sign(X, Y, C, Context), C, erlang:min(exponent(X), exponent(Y))},
+  {Sign, C} = add_coefficient(X, Y),
+  Z = {Sign, C, erlang:min(exponent(X), exponent(Y))},
   decimal_rounding:apply(Z, Context).
 
 add_coefficient({XS, XC, XE}, {YS, YC, YE}) ->
   add_coefficient(add_coefficient_align(XC, XE, YC, YE), XS, YS).
 
 add_coefficient({XCA, YCA}, XS, YS) ->
-  case XS =:= YS of
-    true ->
-      XCA + YCA;
-    false ->
-      erlang:max(XCA, YCA) - erlang:min(XCA, YCA)
-  end.
+  X = case XS of 0 -> 1; 1 -> -1 end,
+  Y = case YS of 0 -> 1; 1 -> -1 end,
+  C = XCA * X + YCA * Y,
+  Sign = case C < 0 of true -> 1; false -> 0 end,
+  {Sign, abs(C)}.
 
 add_coefficient_align(XC, E, YC, E) ->
   {XC, YC};
@@ -47,24 +46,6 @@ add_coefficient_align(XC, XE, YC, YE) when XE > YE ->
   {XC * integer_pow(10, XE - YE), YC};
 add_coefficient_align(XC, XE, YC, YE) ->
   {XC, YC * integer_pow(10, YE - XE)}.
-
-add_sign(X, Y, C, Context) ->
-  case C =:= 0 of
-    true ->
-      BothNegative = (?is_signed(X) andalso ?is_signed(Y)),
-      SignsDifferent = (?is_signed(X) =/= ?is_signed(Y)),
-      Rounding = decimal_context:rounding(Context),
-      case BothNegative orelse (SignsDifferent andalso Rounding =:= round_floor) of
-        true -> 1;
-        false -> 0
-      end;
-    false ->
-      % Note: cannot use compare/2 here to avoid cyclic dependency
-      % (compare/2 depends on subtract/2 which depends on add/2).
-      AbsValueX = erlang:abs(decimal_conv:float(X, Context)),
-      AbsValueY = erlang:abs(decimal_conv:float(Y, Context)),
-      element(1, case AbsValueX > AbsValueY of true -> X; false -> Y end)
-  end.
 
 subtract(X, Y, Context) ->
   add(X, setelement(1, Y, case element(1, Y) of 0 -> 1; 1 -> 0 end), Context).

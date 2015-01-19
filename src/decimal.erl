@@ -150,7 +150,7 @@ unit_test_() ->
   , ?_assertEqual({0,1900,-2}, add("12", "7.00"))
   , ?_assertEqual({0,101,2}, add("1E+2", "1E+4"))
   , ?_assertEqual({1,infinity}, subtract("1", "Infinity"))
-  , ?_assertEqual({1,0,0}, subtract("-0", "0"))
+  , ?_assertEqual({0,0,0}, subtract("-0", "0"))
   , ?_assertEqual({0,23,-2}, subtract("1.3", "1.07"))
   , ?_assertEqual({0,0,-2}, subtract("1.3", "1.30"))
   , ?_assertEqual({1,77,-2}, subtract("1.3", "2.07"))
